@@ -28,9 +28,13 @@ import com.firebase.geofire.GeoQueryEventListener;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
+import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -103,6 +107,9 @@ public class Home extends AppCompatActivity
     // Presence System
     DatabaseReference mechanicsAvailable;
 
+    PlaceAutocompleteFragment place_location, place_destination;
+    String mPlaceLocation, mPlaceDestination;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -127,13 +134,6 @@ public class Home extends AppCompatActivity
 
         // Init View
         imgExpandable = (ImageView)findViewById(R.id.imgExpandable);
-        mBottomSheet = BottomSheetClientFragment.newInstance("Client Bottom Sheet");
-        imgExpandable.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mBottomSheet.show(getSupportFragmentManager(), mBottomSheet.getTag());
-            }
-        });
 
         btnPickupRequest = (Button)findViewById(R.id.btnRepairRequest);
         btnPickupRequest.setOnClickListener(new View.OnClickListener() {
@@ -145,6 +145,56 @@ public class Home extends AppCompatActivity
                     sendRequestToMechanic(mechanicId);
             }
         });
+
+        place_destination = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.place_destination);
+        place_location = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.place_location);
+
+        // Event
+        place_location.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+                mPlaceLocation = place.getAddress().toString();
+
+                // remove old marker position
+                mMap.clear();
+
+                // add marker at location
+                mUserMarker = mMap.addMarker(new MarkerOptions().position(place.getLatLng())
+                                .icon(BitmapDescriptorFactory.defaultMarker())
+                                .title("Distress Point Here"));
+
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 15.0f));
+            }
+
+            @Override
+            public void onError(Status status) {
+
+            }
+        });
+
+        place_destination.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+
+                mPlaceDestination = place.getAddress().toString();
+
+                // add marker to destination
+                mMap.addMarker(new MarkerOptions().position(place.getLatLng())
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 15.0f));
+
+                // show information at the buttom
+                BottomSheetClientFragment mBottomSheet = BottomSheetClientFragment.newInstance(mPlaceLocation, mPlaceDestination);
+                mBottomSheet.show(getSupportFragmentManager(), mBottomSheet.getTag());
+            }
+
+            @Override
+            public void onError(Status status) {
+
+            }
+        });
+
 
         setUpLocation();
 
@@ -237,8 +287,8 @@ public class Home extends AppCompatActivity
                 if(!isMechanicFound){
                     isMechanicFound = true;
                     mechanicId = key;
-                    btnPickupRequest.setText("SEND MECHANIC A DISTRESS CALL");
-                    Toast.makeText(Home.this, ""+key, Toast.LENGTH_SHORT).show();
+                    btnPickupRequest.setText("SEND A DISTRESS CALL");
+                    //Toast.makeText(Home.this, ""+key, Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -255,9 +305,12 @@ public class Home extends AppCompatActivity
             @Override
             public void onGeoQueryReady() {
                 // if mechanic is still not found, increase search radius
-                if(!isMechanicFound){
+                if(!isMechanicFound && radius < LIMIT){
                     radius ++;
                     findMechanic();
+                } else {
+                    Toast.makeText(Home.this, "No Available Mechanic Near You", Toast.LENGTH_SHORT).show();
+                    btnPickupRequest.setText("REQUEST MECHANIC");
                 }
             }
 
@@ -318,7 +371,7 @@ public class Home extends AppCompatActivity
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     // if changes from mechanic table we reload all mechanics
-                    loadAllAvailableMechanic();
+                    loadAllAvailableMechanic(new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude()));
                 }
 
                 @Override
@@ -342,7 +395,7 @@ public class Home extends AppCompatActivity
                     // Move Camera To this position
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 15.0f));
 
-                    loadAllAvailableMechanic();
+                    loadAllAvailableMechanic(new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude()));
 
             Log.d("Track A Mechanic", String.format("Your location was changed : %f / %f", latitude, longitude));
 
@@ -351,19 +404,19 @@ public class Home extends AppCompatActivity
         }
     }
 
-    private void loadAllAvailableMechanic() {
+    private void loadAllAvailableMechanic(final LatLng location) {
         //firstly we remove all markers including our location marker
         mMap.clear();
 
         // Add our location again
-        mMap.addMarker(new MarkerOptions().position(new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude()))
-                        .title("You: Username"));
+        mMap.addMarker(new MarkerOptions().position(location)
+                        .title("You"));
 
         // load all available mechanic in a 3km distance
         DatabaseReference mechanicLocation = FirebaseDatabase.getInstance().getReference(Common.mechanic_tbl);
         GeoFire gf = new GeoFire(mechanicLocation);
 
-        GeoQuery geoQuery = gf.queryAtLocation(new GeoLocation(mLastLocation.getLatitude(), mLastLocation.getLongitude()), distance);
+        GeoQuery geoQuery = gf.queryAtLocation(new GeoLocation(location.latitude, location.longitude), distance);
         geoQuery.removeAllListeners();
 
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
@@ -410,7 +463,7 @@ public class Home extends AppCompatActivity
             public void onGeoQueryReady() {
                 if(distance <= LIMIT) {
                     distance ++;
-                    loadAllAvailableMechanic();
+                    loadAllAvailableMechanic(location);
                 }
 
             }
