@@ -1,0 +1,99 @@
+{
+  "project_info": {
+    "project_number": "348602346035",
+    "firebase_url": "https://track-a-mechanic-1482824777794.firebaseio.com",
+    "project_id": "track-a-mechanic-1482824777794",
+    "storage_bucket": "track-a-mechanic-1482824777794.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:348602346035:android:fed170112f055fc3",
+        "android_client_info": {
+          "package_name": "com.populargeng.tammechanic"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "348602346035-v7n6rtngql5s2rfkheltcubn2dgih39p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.populargeng.tammechanic",
+            "certificate_hash": "379e80abb5cbbc71cc10e3b98491fe5dc0e0a01a"
+          }
+        },
+        {
+          "client_id": "348602346035-mdipk2ospckd16okgcak1upm97jq1b3q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCY12yc0dTK9DkhdFt5YFL1X_UWCJBD4Gs"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "348602346035-mdipk2ospckd16okgcak1upm97jq1b3q.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:348602346035:android:a85412f223ad18b9",
+        "android_client_info": {
+          "package_name": "com.populargeng.trackamechanic"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "348602346035-igb7sckr512pmnve9ui6nbo3qki3sf1d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.populargeng.trackamechanic",
+            "certificate_hash": "379e80abb5cbbc71cc10e3b98491fe5dc0e0a01a"
+          }
+        },
+        {
+          "client_id": "348602346035-mdipk2ospckd16okgcak1upm97jq1b3q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCY12yc0dTK9DkhdFt5YFL1X_UWCJBD4Gs"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "348602346035-mdipk2ospckd16okgcak1upm97jq1b3q.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
